@@ -1,0 +1,93 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${packageName}.${activityClass}" >
+
+    <TextView
+        android:id="@+id/textView_ShowSystemInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/judge" />
+
+    <Button
+        android:id="@+id/button_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView_ShowSystemInfo"
+        android:text="@string/start" />
+
+    <TextView
+        android:id="@+id/textView_judge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_start"
+        android:layout_marginTop="31dp"
+        android:text="" />
+    <Button
+        android:id="@+id/button_chmod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView_judge"
+        android:layout_toRightOf="@+id/button_start"
+        android:text="@string/chmod_data" 
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/button_statusbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignRight="@+id/button_start"
+        android:layout_alignTop="@+id/textView_judge"
+        android:layout_marginRight="18dp"
+        android:text="statusbar" />
+
+    <Button
+        android:id="@+id/button_statusbardata"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/button_statusbar"
+        android:layout_below="@+id/button_statusbar"
+        android:layout_marginTop="20dp"
+        android:text="statusbar_data" />
+
+    <Button
+        android:id="@+id/yunosettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView_ShowSystemInfo"
+        android:layout_centerHorizontal="true"
+        android:text="yunos_activity" />
+
+    <Button
+        android:id="@+id/ota"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/yunosettings"
+        android:layout_alignBottom="@+id/yunosettings"
+        android:layout_toRightOf="@+id/yunosettings"
+        android:layout_marginRight="16dp"
+        android:text="ota" />
+    
+    <Button
+        android:id="@+id/ota_sdcard"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/yunosettings"
+        android:layout_alignBottom="@+id/yunosettings"
+        android:layout_toRightOf="@+id/ota"
+        android:layout_marginRight="16dp"
+        android:text="ota_sdcard" />
+    
+    <Button
+        android:id="@+id/ota_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/yunosettings"
+        android:layout_alignBottom="@+id/yunosettings"
+        android:layout_toRightOf="@+id/ota_sdcard"
+        android:layout_marginRight="16dp"
+        android:text="ota_data" />
+
+</RelativeLayout>
