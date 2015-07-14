@@ -1,19 +1,30 @@
-package com.jhy.selfdo;
+package com.jhy.yunosdo;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.yunos.fotasdk.httpxml.HttpService;
+import com.yunos.fotasdk.model.HttpXmlParams;
 
 import android.app.Activity;
 import android.app.Notification;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,22 +41,35 @@ import android.widget.Toast;
 public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
+	protected static final int FOTA = 1;
 	Button bt,bt_s,bt_sd;
-	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data;
+	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo;
 	TextView tx;
+	Context ctx;
+	
+	  View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener()
+	  {
+	    public void onFocusChange(View paramView, boolean paramBoolean)
+	    {
+	    	Log.d("jhy", paramView.getId()+":"+paramBoolean);
+	    }
+	  };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		ctx =this;
 		bt = (Button) findViewById(R.id.button_start);
 		bt_s = (Button) findViewById(R.id.button_statusbar);
 		bt_sd = (Button) findViewById(R.id.button_statusbardata);
+		bt_sd.setOnFocusChangeListener(onFocusChangeListener);
+		
 		yunosettings = (Button) findViewById(R.id.yunosettings);
 		ota = (Button) findViewById(R.id.ota);
 		ota_sdcard = (Button) findViewById(R.id.ota_sdcard);
 		ota_data = (Button) findViewById(R.id.ota_data);
+		yuno_fotainfo  = (Button) findViewById(R.id.yuno_fotainfo);
 		
 		
 		tx = (TextView) findViewById(R.id.textView_judge);
@@ -60,6 +84,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 		yunosettings.setOnClickListener(this);
 		ota.setOnClickListener(this);
+		yuno_fotainfo.setOnClickListener(this);
 
 	}
 
@@ -290,7 +315,15 @@ public class MainActivity extends Activity implements OnClickListener {
 	        //localIntent3.addCategory("android.intent.category.LAUNCHER");
 			localIntent5.setComponent(new ComponentName("com.android.settings", "com.yunos.tv.settings.WallPaperSelect"));
 	        startActivity(localIntent5); 
-		}  else if (arg0.getId() == R.id.button_chmod) {
+		}  else if(arg0.getId() == R.id.yuno_fotainfo){
+			
+
+			Message m = mhadler.obtainMessage(FOTA, "test");
+			m.sendToTarget();
+			
+			
+			
+		} else if (arg0.getId() == R.id.button_chmod) {
 
 			try {
 				execSuCommand("busybox chmod 777 -R /data");
@@ -306,17 +339,108 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	}
 
+	  public String getSystemProperty(String paramString1, String paramString2)
+	  {
+	    try
+	    {
+	      String str = (String)Class.forName("android.os.SystemProperties").getMethod("get", new Class[] { String.class, String.class }).invoke(null, new Object[] { paramString1, paramString2 });
+	      return str;
+	    }
+	    catch (Exception localException)
+	    {
+	    }
+	    return paramString2;
+	  }
+	  
+	  private Map<String, String> buildAppCheckParams()
+	  {
+		  Environment environment = new Environment(ctx);
+	    Map<String, String> localMap = buildParams();
+	    localMap.put("updateType", environment.getSystemProperty("ro.product.model", null));
+	    localMap.put("queryType", String.valueOf(14));
+	    List<PackageInfo> localList = getPackageManager().getInstalledPackages(0);
+	    StringBuilder localStringBuilder = new StringBuilder();
+	    localStringBuilder.append("[");
+	    for (int i = 0; i < localList.size(); ++i)
+	    {
+	      PackageInfo localPackageInfo = (PackageInfo)localList.get(i);
+	      localStringBuilder.append("{\"");
+	      localStringBuilder.append(localPackageInfo.packageName);
+	      localStringBuilder.append("\":\"");
+	      localStringBuilder.append(localPackageInfo.versionCode);
+	      localStringBuilder.append("\"}");
+	      if (i >= -1 + localList.size())
+	        continue;
+	      localStringBuilder.append(",");
+	    }
+	    localStringBuilder.append("]");
+	    localMap.put("applist", localStringBuilder.toString());
+	    return localMap;
+	  }
+
+	  private Map<String, String> buildParams()
+	  {
+		  Environment environment = new Environment(ctx);
+	    LinkedHashMap<String, String> localLinkedHashMap = new LinkedHashMap();
+	    localLinkedHashMap.put("productType", environment.getProductType());
+	    localLinkedHashMap.put("phone", environment.getPhoneType());
+	    localLinkedHashMap.put("imei", environment.getDeviceId());
+	    localLinkedHashMap.put("system", environment.getSystemVersion());
+	    localLinkedHashMap.put("base", environment.getBaseVersion());
+	    //if (new FotaUpdateResult(this.context).getInstallFailCount() > 0);
+	    for (String str = "unknown"; ; str = environment.getBspVersion())
+	    {
+	      localLinkedHashMap.put("aliyun", str);
+	      //localLinkedHashMap.put("kernel", environment.getKernelVersion());
+	      localLinkedHashMap.put("kernel", "null");
+	      return localLinkedHashMap;
+	    }
+	  }
+	  
 	Handler mhadler = new Handler() {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case THREAD:
 				tx.setText((String) msg.obj);
 				break;
+			case FOTA:
+				new Thread(new fotainfo()).start();
+				break;
 			}
 			super.handleMessage(msg);
 		}
 	};
 
+	class fotainfo implements Runnable {
+
+		@Override
+		public void run() {
+
+			HttpService hs =new HttpService();
+			HttpXmlParams xmlParams = new HttpXmlParams();
+			
+			try {
+				String str = hs.doPost("https://osupdateservice.yunos.com/update/manifest", buildAppCheckParams(), xmlParams);
+				Log.d("jhy",str);
+				
+				SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");  
+		        String t=format.format(new Date());
+		        
+				String filename = getFilesDir().getPath()+File.separator+Build.MODEL+"_"+t +".xml";
+				File file = new File(filename);
+				FileOutputStream fs = new FileOutputStream( file );
+				
+				fs.write(str.getBytes("UTF-8"));
+				fs.flush();
+				fs.close();
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+	}
 	class cleanjob implements Runnable {
 
 		@Override

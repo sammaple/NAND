@@ -59,6 +59,15 @@
         android:layout_below="@+id/textView_ShowSystemInfo"
         android:layout_centerHorizontal="true"
         android:text="yunos_activity" />
+    
+    
+    <Button
+        android:id="@+id/yuno_fotainfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/yunosettings"
+        android:layout_centerHorizontal="true"
+        android:text="fotainfo" />
 
     <Button
         android:id="@+id/ota"
