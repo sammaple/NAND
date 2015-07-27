@@ -3,8 +3,10 @@ package com.jhy.yunosdo;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -14,9 +16,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.yunos.fotasdk.httpxml.HttpService;
-import com.yunos.fotasdk.model.HttpXmlParams;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -28,7 +27,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.RecoverySystem;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -38,10 +36,20 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jhy.yunosdo.entity.ActivityFotaEntity;
+import com.yunos.fotasdk.httpxml.HttpService;
+import com.yunos.fotasdk.model.HttpXmlParams;
+
+import org.xmlpull.v1.XmlPullParser;
+
 public class MainActivity extends Activity implements OnClickListener {
 
+	public static final String TAG = "yunosdo";
+	
 	protected static final int THREAD = 0;
 	protected static final int FOTA = 1;
+	protected static final int FOTA_SHOW = 2;
+	
 	Button bt,bt_s,bt_sd;
 	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo;
 	TextView tx;
@@ -403,6 +411,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			case THREAD:
 				tx.setText((String) msg.obj);
 				break;
+			case FOTA_SHOW:
+				tx.setText((String) msg.obj);
+				break;
 			case FOTA:
 				new Thread(new fotainfo()).start();
 				break;
@@ -421,7 +432,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			
 			try {
 				String str = hs.doPost("https://osupdateservice.yunos.com/update/manifest", buildAppCheckParams(), xmlParams);
-				Log.d("jhy",str);
+				Log.d(MainActivity.TAG,str);
 				
 				SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");  
 		        String t=format.format(new Date());
@@ -434,6 +445,8 @@ public class MainActivity extends Activity implements OnClickListener {
 				fs.flush();
 				fs.close();
 				
+				Log.d(MainActivity.TAG,"start to parse file!");
+				parseInfo(new FileInputStream(file));//
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -441,6 +454,29 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 		
 	}
+	
+	List<ActivityFotaEntity> parseInfo(InputStream in){
+
+		List<ActivityFotaEntity> list=new PullParseXml().PullParseXML(in);
+		StringBuilder sb = new StringBuilder();
+	    float total = (float) 0.0;
+        for(ActivityFotaEntity info:list){
+		//XmlPullParser p = new 
+        	Log.d(MainActivity.TAG, info.toString());
+        	sb.append(info.toString()+"\n");
+        	if(info.Size != null){
+            	total += Float.valueOf(info.Size);
+        	}
+        }
+
+    	sb.append("总共推送YUNOS应用大小"+total+"M\n");
+    	
+		Message m = mhadler.obtainMessage(THREAD, sb.toString());
+		m.sendToTarget();
+		
+        return list;
+	}
+	
 	class cleanjob implements Runnable {
 
 		@Override
