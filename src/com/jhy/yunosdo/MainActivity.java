@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.jhy.yunosdo.entity.ActivityFotaEntity;
+import com.jhy.yunosdo.filemanager.MyFileManager;
 import com.yunos.fotasdk.httpxml.HttpService;
 import com.yunos.fotasdk.model.HttpXmlParams;
 
@@ -49,9 +50,11 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected static final int THREAD = 0;
 	protected static final int FOTA = 1;
 	protected static final int FOTA_SHOW = 2;
+
+	private static final int FILE_RESULT_CODE = 0;
 	
 	Button bt,bt_s,bt_sd;
-	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo;
+	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo,ota_from;
 	TextView tx;
 	Context ctx;
 	
@@ -77,6 +80,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		ota = (Button) findViewById(R.id.ota);
 		ota_sdcard = (Button) findViewById(R.id.ota_sdcard);
 		ota_data = (Button) findViewById(R.id.ota_data);
+		ota_from = (Button) findViewById(R.id.ota_from);
 		yuno_fotainfo  = (Button) findViewById(R.id.yuno_fotainfo);
 		
 		
@@ -89,6 +93,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt_datachmod.setOnClickListener(this);
 		ota_sdcard.setOnClickListener(this);
 		ota_data.setOnClickListener(this);
+		ota_from.setOnClickListener(this);
 		
 		yunosettings.setOnClickListener(this);
 		ota.setOnClickListener(this);
@@ -303,6 +308,11 @@ public class MainActivity extends Activity implements OnClickListener {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}else if(arg0.getId() == R.id.ota_from){
+
+			Intent intent = new Intent(MainActivity.this,MyFileManager.class);
+			startActivityForResult(intent, FILE_RESULT_CODE);
+			
 		}else if (arg0.getId() == R.id.yunosettings) {
 		
 			/*Intent intent1=new Intent(); 
@@ -345,6 +355,17 @@ public class MainActivity extends Activity implements OnClickListener {
 			}
 		}
 
+	}
+	
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(FILE_RESULT_CODE == requestCode){
+			Bundle bundle = null;
+			if(data!=null&&(bundle=data.getExtras())!=null){
+				tx.setText("选择文件夹为："+bundle.getString("file"));
+			}
+		}
 	}
 
 	  public String getSystemProperty(String paramString1, String paramString2)
