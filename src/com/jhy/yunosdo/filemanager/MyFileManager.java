@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.jhy.yunosdo.MainActivity;
 import com.jhy.yunosdo.R;
+import com.jhy.yunosdo.utils.Util;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -95,13 +96,17 @@ public class MyFileManager extends ListActivity {
 	}
 
 	private void openFile(File f) {
-		Intent intent = new Intent();
+		/*Intent intent = new Intent();
 		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.setAction(android.content.Intent.ACTION_VIEW);
 
 		String type = getMIMEType(f);
 		intent.setDataAndType(Uri.fromFile(f), type);
-		startActivity(intent);
+		startActivity(intent);*/
+		
+		Util.cpToData(MyFileManager.this,f.getAbsolutePath());
+
+		Log.i(this.getClass().getName(), f.getAbsolutePath());
 	}
 
 	private String getMIMEType(File f) {
