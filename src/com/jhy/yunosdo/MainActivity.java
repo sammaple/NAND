@@ -54,7 +54,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	private static final int FILE_RESULT_CODE = 0;
 	
 	Button bt,bt_s,bt_sd;
-	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo,ota_from;
+	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo,ota_to_data;
+	Button ota_to_sdcard;
 	TextView tx;
 	Context ctx;
 	
@@ -80,7 +81,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		ota = (Button) findViewById(R.id.ota);
 		ota_sdcard = (Button) findViewById(R.id.ota_sdcard);
 		ota_data = (Button) findViewById(R.id.ota_data);
-		ota_from = (Button) findViewById(R.id.ota_from);
+		ota_to_data = (Button) findViewById(R.id.ota_to_data);
+		ota_to_sdcard =  (Button) findViewById(R.id.ota_to_sdcard);
 		yuno_fotainfo  = (Button) findViewById(R.id.yuno_fotainfo);
 		
 		
@@ -93,7 +95,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		bt_datachmod.setOnClickListener(this);
 		ota_sdcard.setOnClickListener(this);
 		ota_data.setOnClickListener(this);
-		ota_from.setOnClickListener(this);
+		ota_to_data.setOnClickListener(this);
+		ota_to_sdcard.setOnClickListener(this);
 		
 		yunosettings.setOnClickListener(this);
 		ota.setOnClickListener(this);
@@ -103,70 +106,60 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onPause");
 		super.onPause();
 	}
 
 	@Override
 	protected void onPostResume() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onPostResume");
 		super.onPostResume();
 	}
 
 	@Override
 	protected void onRestart() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onRestart");
 		super.onRestart();
 	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onKeyDown");
 		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean hasWindowFocus() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "hasWindowFocus");
 		return super.hasWindowFocus();
 	}
 
 	@Override
 	public void onBackPressed() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onBackPressed");
 		super.onBackPressed();
 	}
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onKeyUp");
 		return super.onKeyUp(keyCode, event);
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onResume");
 		super.onResume();
 	}
 
 	@Override
 	protected void onStart() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onStart");
 		super.onStart();
 	}
 
 	@Override
 	protected void onStop() {
-		// TODO Auto-generated method stub
 		Log.i(this.getClass().getName(), "onStop");
 		super.onStop();
 	}
@@ -275,7 +268,6 @@ public class MainActivity extends Activity implements OnClickListener {
 				Message m = mhadler.obtainMessage(THREAD, resultstr);
 				m.sendToTarget();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else if (arg0.getId() == R.id.button_statusbar) {
@@ -289,7 +281,6 @@ public class MainActivity extends Activity implements OnClickListener {
 			try {
 			RecoverySystem.installPackage(this, new File("/cache/update.zip"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}else if(arg0.getId() == R.id.ota_sdcard){
@@ -297,7 +288,6 @@ public class MainActivity extends Activity implements OnClickListener {
 			try {
 			RecoverySystem.installPackage(this, new File("/mnt/sdcard/update.zip"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}else if(arg0.getId() == R.id.ota_data){
@@ -305,12 +295,22 @@ public class MainActivity extends Activity implements OnClickListener {
 			try {
 			RecoverySystem.installPackage(this, new File("/data/update.zip"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}else if(arg0.getId() == R.id.ota_from){
+		}else if(arg0.getId() == R.id.ota_to_data){
 
 			Intent intent = new Intent(MainActivity.this,MyFileManager.class);
+			Bundle bundle = new Bundle();  
+            bundle.putString("path", "/data/"); 
+			intent.putExtras(bundle);
+			startActivityForResult(intent, FILE_RESULT_CODE);
+			
+		}else if(arg0.getId() == R.id.ota_to_sdcard){
+
+			Intent intent = new Intent(MainActivity.this,MyFileManager.class);
+			Bundle bundle = new Bundle();  
+            bundle.putString("path", "/mnt/sdcard/");
+			intent.putExtras(bundle);
 			startActivityForResult(intent, FILE_RESULT_CODE);
 			
 		}else if (arg0.getId() == R.id.yunosettings) {
@@ -469,7 +469,6 @@ public class MainActivity extends Activity implements OnClickListener {
 				Log.d(MainActivity.TAG,"start to parse file!");
 				parseInfo(new FileInputStream(file));//
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

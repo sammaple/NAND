@@ -27,8 +27,8 @@ public class Util {
     /*
      * ro.product.model
      */
-    public static String cpToData(Context ctx,String path) {
-       cutString(exec_grep("cp " + path + " /data/update.zip "));
+    public static String cpToData(Context ctx,String path,String destpath) {
+       cutString(exec_grep("cp " + path + " " + destpath +"update.zip "));
 
        Toast.makeText(ctx, "¿½±´Íê³É", Toast.LENGTH_SHORT).show();
 	   return "";

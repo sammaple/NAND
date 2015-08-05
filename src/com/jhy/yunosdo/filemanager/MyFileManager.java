@@ -26,6 +26,9 @@ public class MyFileManager extends ListActivity {
 	private String rootPath = "/";
 	private String curPath = "/";
 	private TextView mPath;
+	
+
+	private String path = "";//go cp dest
 
 	private final static String TAG = "bb";
 
@@ -34,7 +37,11 @@ public class MyFileManager extends ListActivity {
 		super.onCreate(icicle);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		
 
+		Bundle bundle = this.getIntent().getExtras();  
+		path = (String) bundle.get("path");
+		
 		setContentView(R.layout.fileselect);
 		mPath = (TextView) findViewById(R.id.mPath);
 		Button buttonConfirm = (Button) findViewById(R.id.buttonConfirm);
@@ -104,9 +111,9 @@ public class MyFileManager extends ListActivity {
 		intent.setDataAndType(Uri.fromFile(f), type);
 		startActivity(intent);*/
 		
-		Util.cpToData(MyFileManager.this,f.getAbsolutePath());
+		Util.cpToData(MyFileManager.this,f.getAbsolutePath(),path);
 
-		Log.i(this.getClass().getName(), f.getAbsolutePath());
+		Log.i(this.getClass().getName(), f.getAbsolutePath() + "destpath :"+ path);
 	}
 
 	private String getMIMEType(File f) {
