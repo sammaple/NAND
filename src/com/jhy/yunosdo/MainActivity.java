@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,32 +33,56 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.jhy.yunosdo.entity.ActivityFotaEntity;
 import com.jhy.yunosdo.filemanager.MyFileManager;
+import com.jhy.yunosdo.utils.Util;
 import com.yunos.fotasdk.httpxml.HttpService;
 import com.yunos.fotasdk.model.HttpXmlParams;
-
-import org.xmlpull.v1.XmlPullParser;
 
 public class MainActivity extends Activity implements OnClickListener {
 
 	public static final String TAG = "yunosdo";
 	
+	
 	protected static final int THREAD = 0;
 	protected static final int FOTA = 1;
 	protected static final int FOTA_SHOW = 2;
+	protected static final int FOTA_UPLOAD = 3;
+	protected static final int UI_UPDATE_THREAD = 4;
+	
+	
+	public String FOTAINFO_PATH = "";
+	
+	//R28 25455161A6D2190A6B9C6B2501E131F2
+	public String[] preDefine ={
+			"YBKJ_R28_1.8.0-R-20141223.1400_1_Up.xml",
+			"YBKJ_R28_1.8.0-R-20150120.1954_2_Up.xml",
+			"YBKJ_M100_1.8.0-R-20141230.1756_Up.xml",
+			"YBKJ_AK5_1.8.0-R-20141230.1318_Up.xml",
+			"XMATE_R31_1.8.0-R-20141218.1036_Up.xml",
+			"10MOONS_T2Q_1.7.4-R-20140811.1722_Up.xml"
+			
+	};
 
 	private static final int FILE_RESULT_CODE = 0;
 	
 	Button bt,bt_s,bt_sd;
-	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo,ota_to_data;
+	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo,ota_to_data,yuno_fotaupload,yuno_fotainfo_pre;
+	Button ota_clear;
 	Button ota_to_sdcard;
 	TextView tx;
 	Context ctx;
+
+	ArrayAdapter<String> adapter;
+	Spinner sp;
 	
 	  View.OnFocusChangeListener onFocusChangeListener = new View.OnFocusChangeListener()
 	  {
@@ -71,6 +96,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		FOTAINFO_PATH = getFilesDir().getPath();
 		ctx =this;
 		bt = (Button) findViewById(R.id.button_start);
 		bt_s = (Button) findViewById(R.id.button_statusbar);
@@ -84,7 +111,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		ota_to_data = (Button) findViewById(R.id.ota_to_data);
 		ota_to_sdcard =  (Button) findViewById(R.id.ota_to_sdcard);
 		yuno_fotainfo  = (Button) findViewById(R.id.yuno_fotainfo);
-		
+		yuno_fotaupload = (Button) findViewById(R.id.yuno_fotaupload);
+		yuno_fotainfo_pre = (Button) findViewById(R.id.yuno_fotainfo_pre);
+		ota_clear = (Button) findViewById(R.id.ota_clear);
 		
 		tx = (TextView) findViewById(R.id.textView_judge);
 		bt_datachmod = (Button) findViewById(R.id.button_chmod);
@@ -101,7 +130,50 @@ public class MainActivity extends Activity implements OnClickListener {
 		yunosettings.setOnClickListener(this);
 		ota.setOnClickListener(this);
 		yuno_fotainfo.setOnClickListener(this);
+		yuno_fotaupload.setOnClickListener(this);
+		yuno_fotainfo_pre.setOnClickListener(this);
+		ota_clear.setOnClickListener(this);
 
+		sp = (Spinner) findViewById(R.id.spinner1);
+		new Thread(new ScanDataJob()).start();// get kl files
+
+	}
+	
+	public   String   inputStream2String   (InputStream   in)   throws   IOException   { 
+        StringBuffer   out   =   new   StringBuffer(); 
+        byte[]   b   =   new   byte[4096]; 
+        for   (int   n;   (n   =   in.read(b))   !=   -1;)   { 
+                out.append(new   String(b,   0,   n)); 
+        } 
+        return   out.toString(); 
+} 
+	
+	//osupdate配置文件扫描
+	class ScanDataJob implements Runnable {
+
+		@Override
+		public void run() {
+			InputStream in = null;
+			for (String path : preDefine) {
+
+				try {
+					in = ctx.getAssets().open(path);
+					if(in != null){
+						String parameters = inputStream2String(in);
+						((MyApplication)(ctx.getApplicationContext())).getMap().put(path,parameters);
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}finally{
+					in =null;
+				}
+			}
+			
+			
+			Message m = mhadler.obtainMessage(UI_UPDATE_THREAD, "");
+			m.sendToTarget();
+		}
 	}
 
 	@Override
@@ -333,13 +405,20 @@ public class MainActivity extends Activity implements OnClickListener {
 	        //localIntent3.addCategory("android.intent.category.LAUNCHER");
 			localIntent5.setComponent(new ComponentName("com.android.settings", "com.yunos.tv.settings.WallPaperSelect"));
 	        startActivity(localIntent5); 
-		}  else if(arg0.getId() == R.id.yuno_fotainfo){
+		}  else if(arg0.getId() == R.id.yuno_fotainfo){//get app fota infos
 			
-
 			Message m = mhadler.obtainMessage(FOTA, "test");
 			m.sendToTarget();
 			
-			
+		} else if(arg0.getId() == R.id.yuno_fotainfo_pre){
+
+			Message m = mhadler.obtainMessage(FOTA, "pre");//pre 
+			m.sendToTarget();
+		}
+		else if(arg0.getId() == R.id.yuno_fotaupload){
+
+			Message m = mhadler.obtainMessage(FOTA_UPLOAD, "test");
+			m.sendToTarget();
 			
 		} else if (arg0.getId() == R.id.button_chmod) {
 
@@ -353,6 +432,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		else if(arg0.getId() == R.id.ota_clear){
+			Util.delOTA(ctx);
 		}
 
 	}
@@ -436,15 +518,108 @@ public class MainActivity extends Activity implements OnClickListener {
 				tx.setText((String) msg.obj);
 				break;
 			case FOTA:
-				new Thread(new fotainfo()).start();
+				if(msg.obj == "test"){
+					new Thread(new FotaInfo(0,null)).start();
+				}else{
+					String parameters =( (MyApplication)ctx.getApplicationContext()).getMap().get((String)sp.getSelectedItem());
+					new Thread(new FotaInfo(1, parameters)).start();
+				}
+				break;
+			case UI_UPDATE_THREAD:
+				//tx.setText((String) msg.obj);
+				//update insert data
+				List<String> namelist =new ArrayList<String>();
+				namelist.addAll(((MyApplication) ctx.getApplicationContext()).getMap().keySet());
+				
+				adapter = new ArrayAdapter<String>(ctx,android.R.layout.simple_list_item_checked, namelist);    
+		        //第三步：为适配器设置下拉列表下拉时的菜单样式。    
+		        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);    
+		        //第四步：将适配器添加到下拉列表上    
+		        sp.setAdapter(adapter);    
+				break;
+			case FOTA_UPLOAD:
+				new Thread(new FotaUpload()).start();
 				break;
 			}
 			super.handleMessage(msg);
 		}
 	};
+	
 
-	class fotainfo implements Runnable {
+	/**
+	 * FOTA 环境变量收集显示
+	 */
+    private void enterUploadFotaInfo() {
+        // 显示进度Dialog
+        /*ProgressDialog mProgressDialog = new ProgressDialog(MainActivity.this);
+        mProgressDialog.setMessage("请稍后，正在收集信息并上传......");
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.show();
+        mProgressDialog.setOnCancelListener(new OnCancelListener() {
 
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                Toast.makeText(MainActivity.this, "收集完成", Toast.LENGTH_SHORT).show();
+            }
+        });*/
+
+		try {
+			Gson gson = new Gson();
+	    	Map<String, String> parameters = buildAppCheckParams();
+	    	String final_gson = gson.toJson(parameters);
+	    	
+			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");  
+	        String t=format.format(new Date());
+
+	        String version = Util.getVersion();
+	        
+			String filename = getFilesDir().getPath()+File.separator+Build.MODEL+"_"+version+"_"+t +"_Up.xml";
+			File file = new File(filename);
+			FileOutputStream fs = new FileOutputStream( file );
+			
+			fs.write(final_gson.getBytes("UTF-8"));
+			fs.flush();
+			fs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+        String model = Util.getModel();
+        String version = Util.getVersion();
+        String uuid = Util.getUUID();
+        String flag = "FOTAINFO";
+        // 获取 zip 包 并上传
+        Util.getZip(null, flag, model, version, uuid,FOTAINFO_PATH);
+
+    }
+    
+
+	class FotaUpload implements Runnable {
+
+		@Override
+		public void run() {
+			enterUploadFotaInfo();
+		}
+		
+	}
+    
+
+    /**
+     * 模拟发送FOTA APP query,并解析显示
+     * @author juling.jhy
+     *
+     */
+	class FotaInfo implements Runnable {
+
+		public FotaInfo(int flag, String parameters) {
+			super();
+			this.flag = flag;
+			this.parameters = parameters;
+		}
+		
+		int flag = 0;//0 is local variable,1 is prebuild variable
+		String parameters = "";
+		
 		@Override
 		public void run() {
 
@@ -452,7 +627,19 @@ public class MainActivity extends Activity implements OnClickListener {
 			HttpXmlParams xmlParams = new HttpXmlParams();
 			
 			try {
-				String str = hs.doPost("https://osupdateservice.yunos.com/update/manifest", buildAppCheckParams(), xmlParams);
+				String str = "";
+				String uuid= "";
+				if(flag ==0){
+					Map<String,String> map  = buildAppCheckParams();
+					uuid = map.get("imei");
+					str = hs.doPost("https://osupdateservice.yunos.com/update/manifest", map, xmlParams);
+				}else{
+
+					Gson gson = new Gson();
+					Map<String,String> map =  gson.fromJson(parameters, new TypeToken<Map<String,String>>(){}.getType());
+					uuid = map.get("imei");
+					str = hs.doPost("https://osupdateservice.yunos.com/update/manifest", map, xmlParams);
+				}
 				Log.d(MainActivity.TAG,str);
 				
 				SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");  
@@ -467,7 +654,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				fs.close();
 				
 				Log.d(MainActivity.TAG,"start to parse file!");
-				parseInfo(new FileInputStream(file));//
+				parseInfo(new FileInputStream(file),uuid);//list update/install apps info &delete apps info
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -475,21 +662,29 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 	}
 	
-	List<ActivityFotaEntity> parseInfo(InputStream in){
+	List<ActivityFotaEntity> parseInfo(InputStream in,String uuid){
 
 		List<ActivityFotaEntity> list=new PullParseXml().PullParseXML(in);
 		StringBuilder sb = new StringBuilder();
+		StringBuilder sb_del = new StringBuilder();
 	    float total = (float) 0.0;
         for(ActivityFotaEntity info:list){
 		//XmlPullParser p = new 
         	Log.d(MainActivity.TAG, info.toString());
-        	sb.append(info.toString()+"\n");
-        	if(info.Size != null){
-            	total += Float.valueOf(info.Size);
+        	if(info.type != ActivityFotaEntity.DEL){
+            	sb.append(info.toString()+"\n");
+            	if(info.Size != null){
+                	total += Float.valueOf(info.Size);
+            	}	
+        	}else{
+        		sb_del.append(info.toString()+"\n");
         	}
         }
 
+    	sb.append("本次测试UUID："+uuid+"\n");
     	sb.append("总共推送YUNOS应用大小"+total+"M\n");
+    	sb.append("卸载YUNOS应用信息：\n");
+    	sb.append(sb_del);
     	
 		Message m = mhadler.obtainMessage(THREAD, sb.toString());
 		m.sendToTarget();

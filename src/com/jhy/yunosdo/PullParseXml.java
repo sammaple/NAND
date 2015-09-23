@@ -54,12 +54,16 @@ public class PullParseXml {
 						// 判断如果其实节点为student
 						if ("UpdateItem".equals(nodeName)) {
 							// 实例化student对象
-							fotaInfo = new ActivityFotaEntity();
+							fotaInfo = new ActivityFotaEntity(ActivityFotaEntity.UPDATAE);
 							Log.d(MainActivity.TAG,"UpdateItem");
 						}else if ("InstallItem".equals(nodeName)) {
 							// 实例化student对象
-							fotaInfo = new ActivityFotaEntity();
+							fotaInfo = new ActivityFotaEntity(ActivityFotaEntity.INSTALL);
 							Log.d(MainActivity.TAG,"InstallItem");
+						} else if("DeleteItem".equals(nodeName)){
+							// 实例化student对象
+							fotaInfo = new ActivityFotaEntity(ActivityFotaEntity.DEL);
+							Log.d(MainActivity.TAG,"DelItem");
 						} else if (fotaInfo != null) {
 							
 							setFieldValue(fotaInfo, xmlPullParser.getName(),
@@ -68,7 +72,7 @@ public class PullParseXml {
 						break;
 					// 结束节点
 					case XmlPullParser.END_TAG:
-						if ("InstallItem".equals(nodeName) || "UpdateItem".equals(nodeName)) {
+						if ("InstallItem".equals(nodeName) || "UpdateItem".equals(nodeName) || "DeleteItem".equals(nodeName)) {
 							list.add(fotaInfo);
 							fotaInfo = null;
 						}
