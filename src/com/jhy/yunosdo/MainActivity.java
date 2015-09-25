@@ -68,7 +68,11 @@ public class MainActivity extends Activity implements OnClickListener {
 			"YBKJ_M100_1.8.0-R-20141230.1756_Up.xml",
 			"YBKJ_AK5_1.8.0-R-20141230.1318_Up.xml",
 			"XMATE_R31_1.8.0-R-20141218.1036_Up.xml",
-			"10MOONS_T2Q_1.7.4-R-20140811.1722_Up.xml"
+			"10MOONS_T2Q_1.7.4-R-20140811.1722_Up.xml",
+			"PULIER_A31S_1.7.4-R-20141103.2304_Up.xml",
+			"PULIER_A31S_1.7.4-R-20141103.2304_aftermini_Up.xml",
+			"PULIER_A29_XX_1.8.0-R-20150116.1746_Up.xml",
+			"PULIER_A29_XX_1.8.0-R-20150508.1132_Up.xml"
 			
 	};
 
@@ -76,6 +80,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	
 	Button bt,bt_s,bt_sd;
 	Button bt_datachmod,yunosettings,ota,ota_sdcard,ota_data,yuno_fotainfo,ota_to_data,yuno_fotaupload,yuno_fotainfo_pre;
+	Button yuno_fotainfo_pre_s;
 	Button ota_clear;
 	Button ota_to_sdcard;
 	TextView tx;
@@ -114,6 +119,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		yuno_fotaupload = (Button) findViewById(R.id.yuno_fotaupload);
 		yuno_fotainfo_pre = (Button) findViewById(R.id.yuno_fotainfo_pre);
 		ota_clear = (Button) findViewById(R.id.ota_clear);
+		yuno_fotainfo_pre_s = (Button) findViewById(R.id.yuno_fotainfo_pre_s);
 		
 		tx = (TextView) findViewById(R.id.textView_judge);
 		bt_datachmod = (Button) findViewById(R.id.button_chmod);
@@ -133,6 +139,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		yuno_fotaupload.setOnClickListener(this);
 		yuno_fotainfo_pre.setOnClickListener(this);
 		ota_clear.setOnClickListener(this);
+		yuno_fotainfo_pre_s.setOnClickListener(this);
 
 		sp = (Spinner) findViewById(R.id.spinner1);
 		new Thread(new ScanDataJob()).start();// get kl files
@@ -414,6 +421,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			Message m = mhadler.obtainMessage(FOTA, "pre");//pre 
 			m.sendToTarget();
+		}else if(arg0.getId() == R.id.yuno_fotainfo_pre_s){
+
+			Message m = mhadler.obtainMessage(FOTA, "pre_noimei");//pre  ²»´øimei
+			m.sendToTarget();
 		}
 		else if(arg0.getId() == R.id.yuno_fotaupload){
 
@@ -520,6 +531,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			case FOTA:
 				if(msg.obj == "test"){
 					new Thread(new FotaInfo(0,null)).start();
+				}else if( msg.obj == "pre_noimei"){
+					String parameters =( (MyApplication)ctx.getApplicationContext()).getMap().get((String)sp.getSelectedItem());
+					new Thread(new FotaInfo(2, parameters)).start();
 				}else{
 					String parameters =( (MyApplication)ctx.getApplicationContext()).getMap().get((String)sp.getSelectedItem());
 					new Thread(new FotaInfo(1, parameters)).start();
@@ -617,7 +631,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			this.parameters = parameters;
 		}
 		
-		int flag = 0;//0 is local variable,1 is prebuild variable
+		int flag = 0;//0 is local variable,1 is prebuild variable,2 is prebuild variable without imei
 		String parameters = "";
 		
 		@Override
@@ -638,6 +652,9 @@ public class MainActivity extends Activity implements OnClickListener {
 					Gson gson = new Gson();
 					Map<String,String> map =  gson.fromJson(parameters, new TypeToken<Map<String,String>>(){}.getType());
 					uuid = map.get("imei");
+					if(flag ==2){// without imei
+						map.put("imei","false");
+					}
 					str = hs.doPost("https://osupdateservice.yunos.com/update/manifest", map, xmlParams);
 				}
 				Log.d(MainActivity.TAG,str);

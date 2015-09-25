@@ -152,6 +152,15 @@
         android:layout_alignBottom="@+id/spinner1"
         android:text="fotainfo_pre"  />
     
+    
+    <Button
+        android:id="@+id/yuno_fotainfo_pre_s"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/yuno_fotainfo_pre"
+        android:layout_alignBottom="@+id/yuno_fotainfo_pre"
+        android:text="fotainfo_pre不带imei"  />
+    
     <TextView
         android:id="@+id/textView_judge"
         android:layout_width="match_parent"
