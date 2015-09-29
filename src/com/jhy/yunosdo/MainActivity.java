@@ -72,7 +72,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			"PULIER_A31S_1.7.4-R-20141103.2304_Up.xml",
 			"PULIER_A31S_1.7.4-R-20141103.2304_aftermini_Up.xml",
 			"PULIER_A29_XX_1.8.0-R-20150116.1746_Up.xml",
-			"PULIER_A29_XX_1.8.0-R-20150508.1132_Up.xml"
+			"PULIER_A29_XX_1.8.0-R-20150508.1132_Up.xml",
+			"10MOONS_T2Q_1.7.4-R-20140811.1722_Up_1.xml",
+			"10MOONS_T2Q_1.7.4-R-20140811.1722_Up_2.xml"
 			
 	};
 
