@@ -82,10 +82,12 @@ public class MyFileManager extends ListActivity {
 			items.add("b2");
 			paths.add(f.getParent());
 		}
-		for (int i = 0; i < files.length; i++) {
-			File file = files[i];
-			items.add(file.getName());
-			paths.add(file.getPath());
+		if(files!=null){
+			for (int i = 0; i < files.length; i++) {
+				File file = files[i];
+				items.add(file.getName());
+				paths.add(file.getPath());
+			}
 		}
 
 		setListAdapter(new MyAdapter(this, items, paths));
@@ -93,6 +95,10 @@ public class MyFileManager extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
+		//Util.cpToData(MyFileManager.this,"/mnt/usbhost0/1/ota/update.zip",path);
+
+		//Log.i(this.getClass().getName(),  "destpath :"+ path);
+		
 		File file = new File(paths.get(position));
 		if (file.isDirectory()) {
 			curPath = paths.get(position);
@@ -110,7 +116,8 @@ public class MyFileManager extends ListActivity {
 		String type = getMIMEType(f);
 		intent.setDataAndType(Uri.fromFile(f), type);
 		startActivity(intent);*/
-		
+
+		//Util.cpToData(MyFileManager.this,"/mnt/usbhost0/1/ota/update.zip",path);
 		Util.cpToData(MyFileManager.this,f.getAbsolutePath(),path);
 
 		Log.i(this.getClass().getName(), f.getAbsolutePath() + "destpath :"+ path);

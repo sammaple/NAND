@@ -80,6 +80,14 @@ public class Util {
     public static String getIP() {
         return cutString(exec_grep("getprop | grep dhcp.eth0.ipaddress"));
     }
+    
+
+    /*
+     * ro.yunos.product.chip
+     */
+    public static String getCHIP() {
+        return cutString(exec_grep("getprop | grep ro.yunos.product.chip"));
+    }
 
     /*
      * Ö´ÐÐ linux ÃüÁî

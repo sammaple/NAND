@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jhy.yunosdo"
-    android:versionCode="20150923"
-    android:versionName="1.4">
+    android:versionCode="20160524"
+    android:versionName="2.4"
+    android:sharedUserId="android.uid.system">
     
-    <!-- android:sharedUserId="android.uid.system" -->
+    <!-- android:sharedUserId="android.uid.system"-->
     
     
 

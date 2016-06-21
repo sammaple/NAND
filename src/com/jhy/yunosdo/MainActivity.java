@@ -360,21 +360,32 @@ public class MainActivity extends Activity implements OnClickListener {
 			showNotificationListData();
 		}else if (arg0.getId() == R.id.ota) {
 			try {
-			RecoverySystem.installPackage(this, new File("/cache/update.zip"));
+				RecoverySystem.installPackage(this, new File("/cache/update.zip"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else if(arg0.getId() == R.id.ota_sdcard){
 
 			try {
-			RecoverySystem.installPackage(this, new File("/mnt/sdcard/update.zip"));
+				String chip = Util.getCHIP();
+
+				Log.d("selfdo", "chipid==jhy=="+chip);
+				
+				if(chip != null && (chip.equals("H3") || chip.equals("H8")) ){
+					//实际结果：recovery 识别的 ：/data/media/legacy/update.zip
+					RecoverySystem.installPackage(this, new File("/sdcard/update.zip"));
+				}else{
+
+					RecoverySystem.installPackage(this, new File("/mnt/sdcard/update.zip"));
+				}
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}else if(arg0.getId() == R.id.ota_data){
 
 			try {
-			RecoverySystem.installPackage(this, new File("/data/update.zip"));
+				RecoverySystem.installPackage(this, new File(getFilesDir().getAbsolutePath()+"/update.zip"));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -382,7 +393,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			Intent intent = new Intent(MainActivity.this,MyFileManager.class);
 			Bundle bundle = new Bundle();  
-            bundle.putString("path", "/data/"); 
+			String path = getFilesDir().getAbsolutePath();
+			Log.d("selfdo", path);
+            bundle.putString("path", path+"/"/*"/data/"*/); 
 			intent.putExtras(bundle);
 			startActivityForResult(intent, FILE_RESULT_CODE);
 			
@@ -447,7 +460,16 @@ public class MainActivity extends Activity implements OnClickListener {
 			}
 		}
 		else if(arg0.getId() == R.id.ota_clear){
-			Util.delOTA(ctx);
+			ComponentName componentName = new ComponentName("com.yunos.wifisetting", "com.yunos.wifisetting.WifiApSettingActivity");  
+			Intent intent = new Intent();  
+			intent.setComponent(componentName);  
+			startActivity(intent);  
+			
+			//Intent intent = new Intent("");
+
+			//startActivity(intent);
+			
+			//Util.delOTA(ctx);
 		}
 
 	}
